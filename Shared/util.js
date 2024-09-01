@@ -104,4 +104,8 @@ function createShaderProgram(gl, vshaderSource, fshaderSource) {
     return buffer;
   
   }
+
+  function degreesToRadians(degrees){
+    return degrees * (Math.PI / 180)
+  }
   

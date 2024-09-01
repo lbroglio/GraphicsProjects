@@ -3,19 +3,21 @@ const vSunShaderSource = `
 attribute vec4 a_Position;
 uniform mat4 transform;
 
+attribute vec4 a_Color;
+varying vec4 color;
 void main()
 {
-
-      gl_Position = transform * a_Position;
+    color = a_Color;
+    gl_Position = transform * a_Position;
 }
 `
 
 const fSunShaderSource = `
 precision mediump float;
 
-uniform vec4 color;
+//uniform vec4 color;
 
-
+varying vec4 color;
 void main()
 {
 
@@ -50,7 +52,7 @@ function draw(sunTransform, planetTransform, camTransform){
     // Get the index for the a_Position attribute in the shader
     var positionIndex = gl.getAttribLocation(sunShader, 'a_Position');
     if (positionIndex < 0) {
-        console.log('Could not get the storage location of a_Position');
+        console.log('Error: Could not get the storage location of a_Position');
         return;
     }
 
@@ -64,19 +66,37 @@ function draw(sunTransform, planetTransform, camTransform){
 
     // Bind buffer holding the sun model 
     gl.bindBuffer(gl.ARRAY_BUFFER, sunVertexBuffer);
-    gl.vertexAttribPointer(positionIndex, 3, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(positionIndex, 3, gl.FLOAT, false, 28, 0);
     
+    /*
     // Set the color  uniform
     var colorLoc = gl.getUniformLocation(sunShader, "color");
     gl.uniform4f(colorLoc, 7.0, 1.0, 0.0, 1.0)
+    */
 
-    gl.drawArrays(gl.TRIANGLES, 0, 24 );
+    // Set the color attribute
+    
+    // get the index for the color attribute defined in the vertex shader
+    var colorIndex = gl.getAttribLocation(sunShader, 'a_Color');
+    if (positionIndex < 0) {
+        console.log('Error: Could not get the storage location of a_Color');
+        return;
+    }
+    
+    // Enable color attribute
+    gl.enableVertexAttribArray(colorIndex);
+    //Associate data in buffer with attribute
+    gl.vertexAttribPointer(colorIndex, 4, gl.FLOAT, false, 28, 12);
+
+    gl.drawArrays(gl.TRIANGLES, 0, sunModel.length / 3 );
 
     // Disable attributes and unbind sun shader
     gl.disableVertexAttribArray(positionIndex)
+    gl.disableVertexAttribArray(colorIndex)
     gl.useProgram(null)
 
 }
+
 
 // Entry point which starts animation
 function main(){
@@ -84,16 +104,13 @@ function main(){
     // Get canvas from page
     gl = getGraphicsContext("graphicsCanvas");
 
-    // Set model for the sun
-    sunModel = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-    sunVerts = sunModel.getAttribute("position").array
+    sunModel = getColoredCubeVerticesArray()
     
     // Load and compile shaders
     sunShader = createShaderProgram(gl, vSunShaderSource, fSunShaderSource);
     
     // Load model data onto GPU
-    console.log(sunModel)
-    sunVertexBuffer = createAndLoadBuffer(gl, sunVerts)
+    sunVertexBuffer = createAndLoadBuffer(gl, sunModel)
 
 
     // Specify a fill color for clearing the framebuffer (This will be  the background)
@@ -108,8 +125,8 @@ function main(){
     var animate = function(){
         
         
-        let sunTransform = new THREE.Matrix4().makeRotationX(rot)
-        //sunTransform.multiply(new THREE.Matrix4().makeRotationY(rot))
+        let sunTransform = new THREE.Matrix4().makeRotationX(degreesToRadians(-45))
+        sunTransform.multiply(new THREE.Matrix4().makeRotationY(rot))
 
         draw(sunTransform, null, null)
 

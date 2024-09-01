@@ -1,0 +1,6 @@
+#vscode
+.vscode
+
+# Compiled files
+Shared/file-io/bin
+Shared/file-io/bin/*
