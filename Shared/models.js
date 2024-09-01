@@ -138,3 +138,51 @@ function getColoredCubeVerticesArray(){
 
     return cubeVertsArr
 }
+
+
+// Parse a .obj file containg a sphere and return it as an JavaScript object
+function getSphere(){
+    // .obj model file containing the sphere
+    return readInObj(sphereObj())
+
+}
+
+// Read the contents of an obj as a string and parse it and return it as a JavaScript object.
+function readInObj(fileContents){
+    // Return object
+    let toReturn = {
+        vertices: [],
+        normals: [],
+        textureVerts: []
+    }
+
+    // Split file by lines
+    let byLines = fileContents.split('\n')
+
+    // For each line
+    for(var i =0; i < byLines.length; i++){
+        // Split by white space
+        var lineArr = byLines[i].split(' ');
+        
+        // If this line is a vertex (starts with 'v')
+        if(lineArr[0] === 'v'){
+            toReturn["vertices"].push(parseFloat(lineArr[1]))
+            toReturn["vertices"].push(parseFloat(lineArr[2]))
+            toReturn["vertices"].push(parseFloat(lineArr[3]))
+        }
+        // If this line is a vertex normal (starts with vn)
+        else if(lineArr[0] === "vn"){
+            toReturn["normals"].push(parseFloat(lineArr[1]))
+            toReturn["normals"].push(parseFloat(lineArr[2]))
+            toReturn["normals"].push(parseFloat(lineArr[3]))
+        }
+        // If this line is a texture vertex (starts with vt)
+        else if (lineArr[0] == "vt"){
+            toReturn["textureVerts"].push(parseFloat(lineArr[1]))
+            toReturn["textureVerts"].push(parseFloat(lineArr[2]))
+        }
+
+    }
+
+    return toReturn;
+}
