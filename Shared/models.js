@@ -144,17 +144,51 @@ function getColoredCubeVerticesArray(){
 function getSphere(){
     // .obj model file containing the sphere
     return readInObj(sphereObj())
-
 }
 
-// Read the contents of an obj as a string and parse it and return it as a JavaScript object.
+// Return a list containing the model data for a Sphere in a Float32Array in index 0 if the array
+//and the corresponding color data in a seperate Float32Array in index 1
+function getSphereAndColor(){
+    sphereData = readInObj(sphereObj())
+    colorArr = []
+    for(let i =0; i < sphereData.length / 3; i++){
+        if(i < (sphereData.length / 6)){
+            colorArr = colorArr.concat([1, 0, 0, 1])
+        }
+        else{
+            colorArr = colorArr.concat([0, 0, 1, 1])
+        }
+    }
+    console.log(colorArr)
+    return [sphereData, new Float32Array(colorArr)]
+}
+
+// Read the contents of an obj as a string and parse it and return it as a Float32Array.
 function readInObj(fileContents){
-    // Return object
-    let toReturn = {
+    // Store a vertex
+    let vertex = class{
+        x;
+        y;
+        z;
+    }
+
+    // Store Vertices and normals read in
+    let obs = {
         vertices: [],
         normals: [],
         textureVerts: []
     }
+
+    // Represent a face on the object
+    let face = class {
+        // Vertices stored as an index in the vertices array of an obs dict
+        v1;
+        v2;
+        v3;
+    }
+    
+    // Array of all faces
+    let faces = []
 
     // Split file by lines
     let byLines = fileContents.split('\n')
@@ -166,23 +200,64 @@ function readInObj(fileContents){
         
         // If this line is a vertex (starts with 'v')
         if(lineArr[0] === 'v'){
-            toReturn["vertices"].push(parseFloat(lineArr[1]))
-            toReturn["vertices"].push(parseFloat(lineArr[2]))
-            toReturn["vertices"].push(parseFloat(lineArr[3]))
+            v = new vertex()
+            v.x = parseFloat(lineArr[1])
+            v.y = parseFloat(lineArr[2])
+            v.z = parseFloat(lineArr[3])
+
+            obs["vertices"].push(v)
         }
         // If this line is a vertex normal (starts with vn)
         else if(lineArr[0] === "vn"){
-            toReturn["normals"].push(parseFloat(lineArr[1]))
-            toReturn["normals"].push(parseFloat(lineArr[2]))
-            toReturn["normals"].push(parseFloat(lineArr[3]))
+            obs["normals"].push(parseFloat(lineArr[1]))
+            obs["normals"].push(parseFloat(lineArr[2]))
+            obs["normals"].push(parseFloat(lineArr[3]))
         }
         // If this line is a texture vertex (starts with vt)
-        else if (lineArr[0] == "vt"){
-            toReturn["textureVerts"].push(parseFloat(lineArr[1]))
-            toReturn["textureVerts"].push(parseFloat(lineArr[2]))
+        else if (lineArr[0] === "vt"){
+            obs["textureVerts"].push(parseFloat(lineArr[1]))
+            obs["textureVerts"].push(parseFloat(lineArr[2]))
         }
+        // If this line is a face (start s with f)
+        else if(lineArr[0] === "f"){
+            let f = new face()
+            
+            // Handle texture verts and normals if they were given
+            if(lineArr[1].includes("/")){
+                posVert = lineArr[1].split()[0]
+                f.v1 = obs["vertices"][parseInt(posVert) - 1]
+                posVert = lineArr[2].split()[0]
+                f.v2 = obs["vertices"][parseInt(posVert) - 1]
+                posVert = lineArr[3].split()[0]
+                f.v3 = obs["vertices"][parseInt(posVert) - 1]
+            }
+            else{
+                f.v1 = obs["vertices"][parseInt[lineArr[1]  - 1]]
+                f.v2 = obs["vertices"][parseInt[lineArr[2] - 1]]
+                f.v3 = obs["vertices"][parseInt[lineArr[3]  - 1]]
 
+            }
+
+            faces.push(f)
+        }
     }
 
-    return toReturn;
+    // Build a float 32 array of all vertices in order of faces 
+    let returnArr = []
+    for(let i=0; i < faces.length; i++){
+        f = faces[i]
+        returnArr.push(f.v1.x)
+        returnArr.push(f.v1.y)
+        returnArr.push(f.v1.z)
+
+        returnArr.push(f.v2.x)
+        returnArr.push(f.v2.y)
+        returnArr.push(f.v2.z)
+
+        returnArr.push(f.v3.x)
+        returnArr.push(f.v3.y)
+        returnArr.push(f.v3.z)
+    }
+
+    return new Float32Array(returnArr);
 }
