@@ -1,4 +1,4 @@
- using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -9,7 +9,7 @@ public class ConwayGrid : MonoBehaviour
     /* Store a numerical representation of what cells on the grid are active.
      * Dead cells are 0 and Living cells are 1 
     */
-    public int[,] gridRep;
+    public int[] gridRep;
 
     // The size (in world units) of the dividers between cells
     private static readonly float DIVIDER_SIZE = 0.05f;
@@ -37,9 +37,26 @@ public class ConwayGrid : MonoBehaviour
     private List<GameObject> verticalDividers = new List<GameObject>();
 
     // List of objects which represents the cells in the game
-    private List<GameObject> cells = new List<GameObject>();
+    private GameObject[,] cells;
 
     public ComputeShader GridCompute;
+
+    private bool simRunning = false;
+
+    private ComputeBuffer previousGrid;
+    private ComputeBuffer nextGrid;
+
+
+
+    // Start the simulation of conways game of life
+    public void StartSim(){
+        simRunning = true;
+    }
+
+    // Get whether or not the simulation is running
+    public bool SimRunning(){
+        return simRunning;
+    }
 
     // Build the board on start or resize. Remove any existing dividers and add new ones to divide the board into the proper number of cells.
     private void buildBoard(int numCells)
@@ -54,24 +71,43 @@ public class ConwayGrid : MonoBehaviour
         {
             Destroy(horizontalDividers[i]);
         }
-        for(int i = 0; i < cells.Count; i++)
-        {
-            Destroy(cells[i]);
+        // If the cells array exists
+        if(cells != null){
+            for(int i = 0; i < Size; i++)
+            {
+                for(int j =0; j < Size; j++){
+                    Destroy(cells[i, j]);
+                }
+            }
         }
         horizontalDividers.Clear();
         verticalDividers.Clear();
-        cells.Clear();
+
+        // Remake cells array
+        cells = new GameObject[numCells, numCells];
+
+        // Release compute buffers if necessary
+        if(previousGrid != null){
+            previousGrid.Release();
+        }
+        if(nextGrid != null){
+            nextGrid.Release();
+        }
 
         // Remake the active / dead cells numerical representation array
-        gridRep = new int[numCells, numCells];
+        gridRep = new int[numCells * numCells];
         for(int i = 0; i < numCells; i++)
         {
             for(int j = 0; j < numCells; j++)
             {
-                gridRep[i, j] = 0;
+                gridRep[i + (j * numCells)] = 0;
             }
         }
         
+        // Remake compute buffer
+        previousGrid = new ComputeBuffer(Size * Size, sizeof(int));
+        nextGrid = new ComputeBuffer(Size * Size, sizeof(int));
+
 
         // Setup sizes and offsets
         Size = numCells;
@@ -108,8 +144,7 @@ public class ConwayGrid : MonoBehaviour
                 Vector3 pos = new Vector3(((offset - (DIVIDER_SIZE / 2)) - (i * cellSize)) - (cellObjSize / 2), ((offset - (DIVIDER_SIZE / 2)) - (j * cellSize)) - (cellObjSize / 2), 0);
                 Vector3 scale = new Vector3(cellObjSize, cellObjSize, DIVIDER_SIZE);
                 GameObject newCell = ConwayCell.CreateConwayCell(pos, scale, i, j, CellMat, LivingCellMat);
-                cells.Add(newCell);
-
+                cells[i, j] = newCell;
             }
 
         }
@@ -121,16 +156,71 @@ public class ConwayGrid : MonoBehaviour
         buildBoard(Size);
     }
 
+    void OnDestroy(){
+        // Release compute buffers if necessary
+        if(previousGrid != null){
+            previousGrid.Release();
+        }
+        if(nextGrid != null){
+            nextGrid.Release();
+        }
+    }
+
     // Update is called once per frame
     void Update()
     {
-        // Use compute shader to calculate next board state
+        // If the simulation is running 
+        if(simRunning){
+            // Use compute shader to calculate next board state
+            int kernel = GridCompute.FindKernel("CSMain");
+            GridCompute.SetInt("SideLen", Size);
 
-        int kernel = GridCompute.FindKernel("CSMain");
-        GridCompute.
-        TextureCreator.SetInt("SideLen", sideLen);
-        int workgroupsX = Mathf.CeilToInt(sideLen / 8.0f);
-        int workgroupsY = Mathf.CeilToInt(sideLen / 8.0f);
-        TextureCreator.Dispatch(kernel, workgroupsX, workgroupsY, 1);
+            // Setup compute buffers
+            GridCompute.SetBuffer(0, "PreviousGrid", previousGrid);
+            GridCompute.SetBuffer(0, "CurrGrid", nextGrid);
+
+            // Load buffer with data
+            previousGrid.SetData(gridRep);
+            
+            // Dispatch compute shader
+            int workgroupsX = Mathf.CeilToInt(Size / 5.0f);
+            int workgroupsY = Mathf.CeilToInt(Size / 5.0f);
+            GridCompute.Dispatch(kernel, workgroupsX, workgroupsY, 1);
+
+            // Set grid rep from compute buffer
+            nextGrid.GetData(gridRep);
+
+            // Update grid to match new representation
+            for(int i = 0; i < Size; i++){
+                for(int j = 0; j < Size; j++){
+                    int numRep = gridRep[i + (j * Size)];
+                    if(numRep == 0){
+                        //Debug.Log("HERE0");
+                        cells[i, j].GetComponent<ConwayCell>().SetState(ConwayCell.CellState.DEAD);
+                    }
+                    else{
+                        //Debug.Log("HERE");
+                        cells[i, j].GetComponent<ConwayCell>().SetState(ConwayCell.CellState.ALIVE);
+                    }
+                }
+            }
+
+            // If no cells are alive end simulation
+            bool foundLiving = false;
+            for(int i =0; i < Size * Size; i++){
+                if(gridRep[i] == 1){
+                    foundLiving = true;
+                    break;
+                }
+            }
+
+            if(!foundLiving){
+                simRunning = false;
+            }
+
+        }
+
+
+
     }
 }

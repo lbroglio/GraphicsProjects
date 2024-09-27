@@ -5,6 +5,14 @@ using UnityEngine.UIElements;
 
 public class ConwayCell : MonoBehaviour
 {
+    /* 
+     * The two states a cell can be in. Alive or dead
+    */
+    public enum CellState{
+        DEAD,
+        ALIVE
+    }
+
 
     // Create a new conway cell. It's material values and transform will be set using the arguments
     // It also tracks what cell in the grid it is
@@ -55,18 +63,27 @@ public class ConwayCell : MonoBehaviour
     {
         if(!highlighted)
         {
-            highlighted = true;
-            GetComponent<MeshRenderer>().material = LivingCellMaterial;
-            GameObject grid =  GameObject.Find("ConwayGrid");
-            grid.GetComponent<ConwayGrid>().gridRep[xId, yId] = 1;
+            SetState(CellState.ALIVE);
         }
         else
         {
+            SetState(CellState.DEAD);
+        }
+    }
+
+    // Set the cell to either alive or dead. Sets the shader and changes its numerical representation in the grid 
+    public void SetState(CellState setTo){
+        GameObject grid =  GameObject.Find("ConwayGrid");
+        int gridSize = grid.GetComponent<ConwayGrid>().Size;
+        if(setTo == CellState.DEAD){
             highlighted = false;
             GetComponent<MeshRenderer>().material = CellMaterial;
-            GameObject grid = GameObject.Find("ConwayGrid");
-            grid.GetComponent<ConwayGrid>().gridRep[xId, yId] = 0;
-
+            grid.GetComponent<ConwayGrid>().gridRep[xId + (yId * gridSize)] = 0;
+        }
+        else if(setTo == CellState.ALIVE){
+            highlighted = true;
+            GetComponent<MeshRenderer>().material = LivingCellMaterial;
+            grid.GetComponent<ConwayGrid>().gridRep[xId + (yId * gridSize)] = 1;
         }
     }
 

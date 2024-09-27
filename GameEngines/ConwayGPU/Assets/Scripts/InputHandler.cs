@@ -21,21 +21,34 @@ public class InputHandler : MonoBehaviour
             Application.Quit();
         }
 
-        // When the mouse is clicked
-        if (Input.GetMouseButtonDown(0))
-        {
-            // Cast a ray from the camera to the mouse click position
-            GameObject camera = GameObject.Find("Main Camera");
-            Vector3 mouseClickPos = Input.mousePosition;
+        ConwayGrid grid = GameObject.Find("ConwayGrid").GetComponent<ConwayGrid>();
 
-            RaycastHit hitInfo;
-            Ray r = Camera.main.ScreenPointToRay(Input.mousePosition);
-            Physics.Raycast(r, out hitInfo);
+        // If the simulation isn't running
+        if(grid.SimRunning() == false){
+            // When the mouse is clicked
+            if (Input.GetMouseButtonDown(0))
+            {
+                // Cast a ray from the camera to the mouse click position
+                GameObject camera = GameObject.Find("Main Camera");
+                Vector3 mouseClickPos = Input.mousePosition;
 
-            // If a cell was hit
-            if(hitInfo.collider != null && hitInfo.collider.GetComponent<ConwayCell>() != null) {
-                hitInfo.collider.GetComponent<ConwayCell>().ClickedOn();
+                RaycastHit hitInfo;
+                Ray r = Camera.main.ScreenPointToRay(Input.mousePosition);
+                Physics.Raycast(r, out hitInfo);
+
+                // If a cell was hit
+                if(hitInfo.collider != null && hitInfo.collider.GetComponent<ConwayCell>() != null) {
+                    hitInfo.collider.GetComponent<ConwayCell>().ClickedOn();
+                }
+            }
+
+            // When space is pressed
+            if(Input.GetKeyDown(KeyCode.Space)){
+                // Start the simulation
+                grid.StartSim();
             }
         }
+
+
     }
 }
