@@ -2,16 +2,16 @@
 #pragma kernel CSMain
 
 // Numerical representation of the previous grid
-RWStructuredBuffer<float> PreviousGrid;
+RWStructuredBuffer<int> PreviousGrid;
 
-// Numeriical representation of the current grid
-RWStructuredBuffer<float> CurrGrid;
+// Numerical representation of the current grid
+RWStructuredBuffer<int> CurrGrid;
 
 // Number of cells wide/high the game of life grid being simulated is
 int gridSize;
 
 
-[numthreads(5,5,1)]
+[numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
     // Calculate the state of this cell based on the status of its neighbors
@@ -32,7 +32,6 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         }
     }
     
-
     if (PreviousGrid[id.x + (id.y * gridSize)] == 0 && livingNeighbors == 3)
     {
         CurrGrid[id.x + (id.y * gridSize)] == 1;

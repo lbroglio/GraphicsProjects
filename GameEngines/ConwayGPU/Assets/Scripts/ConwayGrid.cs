@@ -1,4 +1,5 @@
 using System.Collections;
+using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -15,7 +16,7 @@ public class ConwayGrid : MonoBehaviour
     private static readonly float DIVIDER_SIZE = 0.05f;
 
     // The number of cells long and wide this grid is
-    public int Size = 30;
+    public int Size = 32;
 
     // The camera this grid should be positioned in front of
     public Camera Cam;
@@ -105,8 +106,8 @@ public class ConwayGrid : MonoBehaviour
         }
         
         // Remake compute buffer
-        previousGrid = new ComputeBuffer(Size * Size, sizeof(int));
-        nextGrid = new ComputeBuffer(Size * Size, sizeof(int));
+        previousGrid = new ComputeBuffer(Size * Size, sizeof(int), ComputeBufferType.Default);
+        nextGrid = new ComputeBuffer(Size * Size, sizeof(int), ComputeBufferType.Default);
 
 
         // Setup sizes and offsets
@@ -175,24 +176,37 @@ public class ConwayGrid : MonoBehaviour
             int kernel = GridCompute.FindKernel("CSMain");
             GridCompute.SetInt("SideLen", Size);
 
+            // Load buffer with data
+            previousGrid.SetData(gridRep);
+
             // Setup compute buffers
             GridCompute.SetBuffer(0, "PreviousGrid", previousGrid);
             GridCompute.SetBuffer(0, "CurrGrid", nextGrid);
 
-            // Load buffer with data
-            previousGrid.SetData(gridRep);
-            
             // Dispatch compute shader
-            int workgroupsX = Mathf.CeilToInt(Size / 5.0f);
-            int workgroupsY = Mathf.CeilToInt(Size / 5.0f);
+            int workgroupsX = Mathf.CeilToInt(Size / 8.0f);
+            int workgroupsY = Mathf.CeilToInt(Size / 8.0f);
             GridCompute.Dispatch(kernel, workgroupsX, workgroupsY, 1);
 
             // Set grid rep from compute buffer
             nextGrid.GetData(gridRep);
 
+            // Output grid rep to debug
+            string debugStr = "Curr:\n";
+            for(int j =0; j < Size; j++){
+                for(int i =0; i < Size; i++){
+                    debugStr += gridRep[i + (j * Size)];
+                }
+
+                debugStr += '\n';
+            }
+            
+            File.AppendAllText("RepDebug.txt", debugStr);
+            File.AppendAllText("RepDebug.txt", "\n\n");
+
             // Update grid to match new representation
-            for(int i = 0; i < Size; i++){
-                for(int j = 0; j < Size; j++){
+            for(int j = 0; j < Size; j++){
+                for(int i = 0; i < Size; i++){
                     int numRep = gridRep[i + (j * Size)];
                     if(numRep == 0){
                         //Debug.Log("HERE0");
