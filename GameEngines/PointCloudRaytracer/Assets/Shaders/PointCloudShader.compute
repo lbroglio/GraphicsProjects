@@ -83,38 +83,41 @@ float4 SelectPoint(uint x, uint y){
 
     // Select the closest point which intersects this pixel if a ray is cast between it and the camera 
     for(uint i=0; i < numPoints; i++){
-        // Transform the points position
-        float4 pointForTransform = float4(Points[i].position.x, Points[i].position.y, Points[i].position.z, 1);
-        float4 transformPointInter = mul(transform, pointForTransform);
-        float3 transformPoint = float3(transformPointInter.x, transformPointInter.y, transformPointInter.z);
-        
+        // Move on if this point isn't closer thtan the current saved point
+        float pointDist = Dist3D(Points[i].position, camLoc);
 
-        // Create the ray being cast from point to camera
-        Ray r;
-        r.origin = transformPoint;
-        r.direction = normalize(camLoc - transformPoint);
+        if(pointDist < closestDist){
+            // Transform the points position
+            float4 pointForTransform = float4(Points[i].position.x, Points[i].position.y, Points[i].position.z, 1);
+            float4 transformPointInter = mul(transform, pointForTransform);
+            float3 transformPoint = float3(transformPointInter.x, transformPointInter.y, transformPointInter.z);
+            
 
-        // Get the distance from the ray to this pixel's center
+            // Create the ray being cast from point to camera
+            Ray r;
+            r.origin = transformPoint;
+            r.direction = normalize(camLoc - transformPoint);
 
-        // Calculate closest point to the center on r
-        float3 v = pixelCenter - r.origin;
-        float dotProd = dot(v, r.direction);
-        dotProd = max(dotProd, 0.0f); 
-        float3 e = r.origin + r.direction * dotProd;
+            // Get the distance from the ray to this pixel's center
 
-        // Calulcuate distance from e to the pixel center
-        float dist = Dist3D(e, pixelCenter);
-        
-        // Check if the ray passes through the pixel by checking if the dist is less than half the length
-        if(dist <= pixLen){
-            // If this distance between the point and the camera if less than the current closest dist
-            dist = Dist3D(r.origin, camLoc);
-            if(dist < closestDist){
+            // Calculate closest point to the center on r
+            float3 v = pixelCenter - r.origin;
+            float dotProd = dot(v, r.direction);
+            dotProd = max(dotProd, 0.0f); 
+            float3 e = r.origin + r.direction * dotProd;
+
+            // Calulcuate distance from e to the pixel center
+            float dist = Dist3D(e, pixelCenter);
+            
+            // Check if the ray passes through the pixel by checking if the dist is less than half the length
+            if(dist <= pixLen){
                 // Save this point as the new closest for this pixel
                 closestPoint = Points[i];
-                closestDist = dist;
+                closestDist = pointDist;
             }
         }
+
+
 
     }
 
