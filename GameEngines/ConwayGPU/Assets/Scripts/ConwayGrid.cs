@@ -30,6 +30,7 @@ public class ConwayGrid : MonoBehaviour
     // Material to use on Color's when they are selected / living;
     public Material LivingCellMat;
 
+    public int targetFrameRate = 10;
 
     // List of cell divider objects that run in the x direction
     private List<GameObject> horizontalDividers = new List<GameObject>();
@@ -107,7 +108,7 @@ public class ConwayGrid : MonoBehaviour
         
         // Remake compute buffer
         previousGrid = new ComputeBuffer(Size * Size, sizeof(int), ComputeBufferType.Default);
-        nextGrid = new ComputeBuffer(Size * Size, sizeof(int), ComputeBufferType.Default);
+        nextGrid = new ComputeBuffer(Size * Size, sizeof(int));
 
 
         // Setup sizes and offsets
@@ -155,6 +156,7 @@ public class ConwayGrid : MonoBehaviour
     void Start()
     {
         buildBoard(Size);
+        
     }
 
     void OnDestroy(){
@@ -170,18 +172,29 @@ public class ConwayGrid : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
+        QualitySettings.vSyncCount = 0;
+		Application.targetFrameRate = targetFrameRate;
+
         // If the simulation is running 
         if(simRunning){
             // Use compute shader to calculate next board state
             int kernel = GridCompute.FindKernel("CSMain");
-            GridCompute.SetInt("SideLen", Size);
+            GridCompute.SetInt("gridSize", Size);
 
             // Load buffer with data
             previousGrid.SetData(gridRep);
 
+            // Debugging 
+            int[] allTwos = new int[gridRep.Length];
+            for(int i = 0; i < gridRep.Length; i++){
+                allTwos[i] = 2;
+            } 
+            nextGrid.SetData(allTwos);
+
             // Setup compute buffers
-            GridCompute.SetBuffer(0, "PreviousGrid", previousGrid);
-            GridCompute.SetBuffer(0, "CurrGrid", nextGrid);
+            GridCompute.SetBuffer(kernel, "PreviousGrid", previousGrid);
+            GridCompute.SetBuffer(kernel, "CurrGrid", nextGrid);
 
             // Dispatch compute shader
             int workgroupsX = Mathf.CeilToInt(Size / 8.0f);
@@ -200,9 +213,6 @@ public class ConwayGrid : MonoBehaviour
 
                 debugStr += '\n';
             }
-            
-            File.AppendAllText("RepDebug.txt", debugStr);
-            File.AppendAllText("RepDebug.txt", "\n\n");
 
             // Update grid to match new representation
             for(int j = 0; j < Size; j++){

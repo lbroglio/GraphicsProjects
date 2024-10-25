@@ -32,17 +32,18 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         }
     }
     
+    
     if (PreviousGrid[id.x + (id.y * gridSize)] == 0 && livingNeighbors == 3)
     {
-        CurrGrid[id.x + (id.y * gridSize)] == 1;
+        CurrGrid[id.x + (id.y * gridSize)] = 1;
     }
     else if ((PreviousGrid[id.x + (id.y * gridSize)] == 1 && livingNeighbors == 2) || (PreviousGrid[id.x + (id.y * gridSize)]  == 1 && livingNeighbors == 3))
     {
-        CurrGrid[id.x + (id.y * gridSize)] == 1;
+        CurrGrid[id.x + (id.y * gridSize)] = 1;
     }
     else
     {
-        CurrGrid[id.x + (id.y * gridSize)] == 0;
+        CurrGrid[id.x + (id.y * gridSize)] = 0;
     }
 
 }

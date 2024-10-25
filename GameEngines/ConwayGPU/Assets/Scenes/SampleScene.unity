@@ -38,7 +38,6 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -152,11 +151,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 52ae335b212fd7942aa386d499f51fec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Size: 30
+  gridRep: 
+  Size: 32
   Cam: {fileID: 963194227}
   DividerMat: {fileID: 2100000, guid: e9c97ed6ec481914f8d6c46425ddac1d, type: 2}
   CellMat: {fileID: 2100000, guid: d3d2e05b45975364ba2c26611822388a, type: 2}
   LivingCellMat: {fileID: 2100000, guid: 74ea94d50496eb54fa52327752b05c69, type: 2}
+  targetFrameRate: 10
   GridCompute: {fileID: 7200000, guid: 6809330384f8ba64295df755ac39155e, type: 3}
 --- !u!4 &479222128
 Transform:
