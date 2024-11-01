@@ -16,6 +16,8 @@ public class PostProcessing : MonoBehaviour
 
     Material radiationEffectShader;
 
+    private float frameNum  = 0;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -53,6 +55,10 @@ public class PostProcessing : MonoBehaviour
         GameObject player = GameObject.Find("Main Camera");
         Vector3 v = player.transform.position;
         radiationEffectShader.SetVector("playerPos", new Vector4(v.x, v.y, v.z, 1));
+
+        // Update the frame 
+        frameNum = (frameNum + 1) % 10000;
+        radiationEffectShader.SetFloat("frameNum", frameNum);
     }
 
 

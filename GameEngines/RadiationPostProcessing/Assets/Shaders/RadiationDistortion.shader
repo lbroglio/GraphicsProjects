@@ -46,11 +46,14 @@ Shader "Custom/PostProcessing/RadiationDistortion"
             StructuredBuffer<RadiationSource> radiationSources;
             uint numSources;
 
+            float frameNum;
+
             sampler2D _MainTex;
 
-            float random_21(float2 st) {
+            float random1_21(float2 st) {
                 return frac(sin(dot(st.xy,float2(12.9898,78.233)))*43758.5453123);
             }
+
 
             v2f vert (appdata v)
             {
@@ -62,28 +65,26 @@ Shader "Custom/PostProcessing/RadiationDistortion"
 
             fixed4 frag (v2f i) : SV_Target {
 
+                // Calculate the ammount to distort this pixel by
                 float totalDistortion = 0;
-                float4 debug;
                 for(uint j =0; j < numSources; j++){
-
-
+                    
                     float distToSource = distance(radiationSources[j].pos, playerPos);
                     
                     // If the player is within the minimum radius
                     if(distToSource < maximumEffectRadius){
-                        // Get random intensity for this pixel + specific source
-                        float effectRand = random_21(i.uv);
+                        // Get random intensity for this pixel, frame, and source
+                        float effectRand = random1_21(i.uv * (j + 1) * frameNum);        
 
                         // Calculate the value above which a pixel isn't affected by the radiation
                         // By taking the intensity value and scaling it down based on distance
                         float distPercent = 1 - (distToSource / maximumEffectRadius);
-                        float effectCutoff = intensity * distPercent;
-
-
+                        float effectCutoff = intensity * radiationSources[j].strength * distPercent;
                         
                         // If the random value is less than the cutoff increase brightness of this pixel
+                        // by a random amount between 1 - 5
                         if(effectRand < effectCutoff){
-                            totalDistortion = 2;
+                            totalDistortion += 2;
                         }
                     }
 
@@ -93,8 +94,11 @@ Shader "Custom/PostProcessing/RadiationDistortion"
                 fixed4 col = tex2D(_MainTex, i.uv);
 
                 // If there is a distortion increase the brightness
-                if(totalDistortion != 0){
-                    return col * totalDistortion;
+                if(totalDistortion > 0){
+                    // Ensure no components of a distorted pixel are 0
+                    fixed4 intrmCol = col + 0.1;
+
+                    return intrmCol * totalDistortion;
                 }
                 
                 // Return unchanged color
