@@ -48,22 +48,9 @@ Shader "Custom/PostProcessing/RadiationDistortion"
 
             sampler2D _MainTex;
 
-            // hash function which simulates random numbers
-            uint PCGHash(uint rng_state)
-            {
-                rng_state = rng_state * 747796405u + 2891336453u;
-                uint state = rng_state;
-                uint word = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
-                return (word >> 22u) ^ word;
+            float random_21(float2 st) {
+                return frac(sin(dot(st.xy,float2(12.9898,78.233)))*43758.5453123);
             }
-
-            float rand_1_05(in float2 uv)
-            {
-                float2 noise = (frac(sin(dot(uv ,float2(12.9898,78.233)*2.0)) * 43758.5453));
-                return abs(noise.x + noise.y);
-            }
-
-
 
             v2f vert (appdata v)
             {
@@ -85,26 +72,32 @@ Shader "Custom/PostProcessing/RadiationDistortion"
                     // If the player is within the minimum radius
                     if(distToSource < maximumEffectRadius){
                         // Get random intensity for this pixel + specific source
-                        float effectIntensity = rand_1_05(i.uv);
+                        float effectRand = random_21(i.uv);
 
-                        // Scale random intensity based on how close the player is to the  source.
+                        // Calculate the value above which a pixel isn't affected by the radiation
+                        // By taking the intensity value and scaling it down based on distance
                         float distPercent = 1 - (distToSource / maximumEffectRadius);
-                        effectIntensity *= distPercent;
-
-                        // Scale by hardcoded intensity 
-                        effectIntensity *= intensity;
+                        float effectCutoff = intensity * distPercent;
 
 
-                        totalDistortion += effectIntensity;
+                        
+                        // If the random value is less than the cutoff increase brightness of this pixel
+                        if(effectRand < effectCutoff){
+                            totalDistortion = 2;
+                        }
                     }
 
                 }
-                
-                // Add distortion to the color
-                fixed4 col = tex2D(_MainTex, i.uv);
-                
-                col.rgb += totalDistortion;
 
+                // Get the base color
+                fixed4 col = tex2D(_MainTex, i.uv);
+
+                // If there is a distortion increase the brightness
+                if(totalDistortion != 0){
+                    return col * totalDistortion;
+                }
+                
+                // Return unchanged color
                 return col;
             }
             ENDCG

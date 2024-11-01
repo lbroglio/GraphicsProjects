@@ -560,8 +560,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11a812cc30088423f8461a1a8211fd64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Intensity: 1
-  MaximumEffectRadius: 5
+  Intensity: 0.4
+  MaximumEffectRadius: 10
 --- !u!1 &1243363021
 GameObject:
   m_ObjectHideFlags: 0

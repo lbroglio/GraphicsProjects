@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: RadiationDistortion
-  m_Shader: {fileID: 4800000, guid: 85324eb16cd5b4830884239e315ebef2, type: 3}
+  m_Shader: {fileID: 4800000, guid: 9ea8a38d1a78b4706af1fc572933cedd, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
