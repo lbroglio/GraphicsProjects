@@ -84,7 +84,7 @@ Shader "Custom/PostProcessing/RadiationDistortion"
                         // If the random value is less than the cutoff increase brightness of this pixel
                         // by a random amount between 1 - 5
                         if(effectRand < effectCutoff){
-                            totalDistortion += 2;
+                            totalDistortion += 1 + ceil(radiationSources[j].strength / 10);
                         }
                     }
 
