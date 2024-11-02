@@ -18,6 +18,8 @@ public class PostProcessing : MonoBehaviour
 
     private float frameNum  = 0;
 
+     RadiationSource.PassableRadiationSource[] sourcesList;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -25,8 +27,7 @@ public class PostProcessing : MonoBehaviour
         RadiationSource[] sourceObjects = FindObjectsOfType<RadiationSource>();
         
         // Get struct rep for all sources
-        RadiationSource.PassableRadiationSource[] sourcesList = 
-            new RadiationSource.PassableRadiationSource[sourceObjects.Length];
+        sourcesList = new RadiationSource.PassableRadiationSource[sourceObjects.Length];
         for(int i =0; i < sourceObjects.Length; i++){
            sourcesList[i] = sourceObjects[i].GetPassableRep();
         }
@@ -45,7 +46,6 @@ public class PostProcessing : MonoBehaviour
         radiationEffectShader.SetBuffer("radiationSources", radSourcesBuffer);
         radiationEffectShader.SetInt("numSources", sourcesList.Length);    
 
-
     }
 
     // Update is called once per frame
@@ -55,6 +55,14 @@ public class PostProcessing : MonoBehaviour
         GameObject player = GameObject.Find("Main Camera");
         Vector3 v = player.transform.position;
         radiationEffectShader.SetVector("playerPos", new Vector4(v.x, v.y, v.z, 1));
+
+        // Set new position for all radiatiomn sources
+        RadiationSource[] sourceObjects = FindObjectsOfType<RadiationSource>();
+        for(int i =0; i < sourceObjects.Length; i++){
+           sourcesList[i].pos = sourceObjects[i].transform.position;
+        }
+        radSourcesBuffer.SetData(sourcesList);
+
 
         // Update the frame 
         frameNum = (frameNum + 1) % 10000;
