@@ -34,6 +34,7 @@ Shader "Custom/PostProcessing/RadiationDistortion"
             struct RadiationSource {
                 float strength;
                 float4 pos;
+                uint id;
             };
             
 
@@ -44,6 +45,7 @@ Shader "Custom/PostProcessing/RadiationDistortion"
             float4 playerPos;
 
             StructuredBuffer<RadiationSource> radiationSources;
+            RWStructuredBuffer<float> sourcePlayerBlock;
             uint numSources;
 
             float frameNum;

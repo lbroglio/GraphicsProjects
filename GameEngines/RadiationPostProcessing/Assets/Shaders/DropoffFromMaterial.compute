@@ -1,0 +1,40 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+struct BoundingBox {
+    float3 minimal;
+    float3 maximal;
+};
+
+struct RadiationSource {
+    float strength;
+    float4 pos;
+    uint id;
+};
+
+// Input buffers
+StructuredBuffer<BoundingBox> sceneGeometry;
+uint numGeoObjs; 
+
+StructuredBuffer<RadiationSource> radiationSources;
+uint numSources;
+
+// Buffer to write the amount of material between a radiation source and the player
+RWStructuredBuffer<float> sourcePlayerBlock;
+
+float3 playerPos;
+
+
+[numthreads(16,1,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    // If out of range end early 
+    if(id.x >= numSources){
+        return;
+    }
+
+
+    // TODO: insert actual code here!
+
+    Result[id.xy] = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0);
+}
