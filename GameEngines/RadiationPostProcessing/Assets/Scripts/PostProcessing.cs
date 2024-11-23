@@ -73,8 +73,7 @@ public class PostProcessing : MonoBehaviour
     {
         // Add bounding boxes of scene geometry to a ComputeBuffer
         GameObject[] sceneGeo = GameObject.FindGameObjectsWithTag("SceneGeometry");
-        List<BoundingBox>  boundingBoxList = new List<BoundingBox>();
-        numSceneObjs = boundingBoxList.Count;
+        List<BoundingBox> boundingBoxList = new List<BoundingBox>();
         foreach(GameObject geoObj in sceneGeo){
             // Create bounding box struct for this 
             BoundingBox bb;
@@ -83,6 +82,8 @@ public class PostProcessing : MonoBehaviour
             boundingBoxList.Add(bb);
 
         }
+        numSceneObjs = boundingBoxList.Count;
+
 
 
         // Setup compute buffer to hold scene geometry bounding boxes

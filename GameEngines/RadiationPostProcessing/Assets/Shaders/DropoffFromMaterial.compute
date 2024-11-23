@@ -17,7 +17,7 @@ struct RadiationSource {
 struct Ray{
     float3 origin;
     float3 direction;
-}
+};
 
 
 
@@ -45,7 +45,7 @@ Ray CastRayToPlayer(RadiationSource castFrom){
 // Check if a ray intersects a bounding box. 
 // If it does return the difference between the two intersection points (The amount of material this ray passes through)
 // Otherwise return -1.
-int RayBoxIntersect(Ray r, BoundingBox b){
+float RayBoxIntersect(Ray r, BoundingBox b){
     float3 dirfrac;
     // r.dir is unit direction vector of ray
     dirfrac.x = 1.0f / r.direction.x;
@@ -85,14 +85,14 @@ int RayBoxIntersect(Ray r, BoundingBox b){
 [numthreads(16,1,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-
+    
     // If out of range end early 
     if(id.x >= numSources){
         return;
     }
 
     // Check this source against all AABBs and track amount of intersection
-     float totalIntersectionAmt = 0;
+    float totalIntersectionAmt = 0;
     Ray r = CastRayToPlayer(radiationSources[id.x]);
     for(uint j=0; j < numGeoObjs; j++ ){
         float thisObjIntersectionAmt = RayBoxIntersect(r, sceneGeometry[j]);
