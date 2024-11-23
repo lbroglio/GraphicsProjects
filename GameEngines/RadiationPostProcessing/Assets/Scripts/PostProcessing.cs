@@ -149,14 +149,6 @@ public class PostProcessing : MonoBehaviour
         int workgroupsX = Mathf.CeilToInt(sourcesList.Length / 16.0f);
         BlockAmtCalcShader.Dispatch(kernel, workgroupsX, 1, 1);
 
-        // Print block amount
-        float[] tst = new float[sourcesList.Length];
-        sourcePlayerBlockBuffer.GetData(tst);
-        for(int i = 0; i < sourcesList.Length; i++){
-            Debug.Log("Source " + i + ": " + tst[i]);
-        }
-
-
         // Perform post processing
         Graphics.Blit(source, destination, radiationEffectShader);
     }

@@ -19,6 +19,14 @@ struct Ray{
     float3 direction;
 };
 
+// Return information about a found ray-AABB intersection
+struct AABBIntersectPayload{
+    // 0 on a miss and 1 on a hit.
+    uint hitOccured;
+    float tmin;
+    float tmax;
+};
+
 
 
 // Input buffers
@@ -33,6 +41,11 @@ RWStructuredBuffer<float> sourcePlayerBlock;
 
 float3 playerPos;
 
+// Calculate the distance between points a and b in 3D space
+float Dist3D(float3 a, float3 b){
+    return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2) + pow(a.z - b.z, 2));
+}
+
 // Create a ray cast from a radiation source in the direction of the player 
 Ray CastRayToPlayer(RadiationSource castFrom){
     Ray r;
@@ -45,7 +58,7 @@ Ray CastRayToPlayer(RadiationSource castFrom){
 // Check if a ray intersects a bounding box. 
 // If it does return the difference between the two intersection points (The amount of material this ray passes through)
 // Otherwise return -1.
-float RayBoxIntersect(Ray r, BoundingBox b){
+AABBIntersectPayload RayBoxIntersect(Ray r, BoundingBox b){
     float3 dirfrac;
     // r.dir is unit direction vector of ray
     dirfrac.x = 1.0f / r.direction.x;
@@ -64,20 +77,26 @@ float RayBoxIntersect(Ray r, BoundingBox b){
     float tmin = max(max(min(t1, t2), min(t3, t4)), min(t5, t6));
     float tmax = min(min(max(t1, t2), max(t3, t4)), max(t5, t6));
 
-    // Return -1 if AABB intersection is behind ray (tmax < 0)
+    AABBIntersectPayload pl;
+    // Return miss payload if AABB intersection is behind ray (tmax < 0)
     if (tmax < 0)
     {
-        return -1;
+        pl.hitOccured = 0;
+        return pl;
     }
 
-    // Return -1 if no intersection occurs (tmin > tmax)
+    // Return miss payload if no intersection occurs (tmin > tmax)
     if (tmin > tmax)
     {
-        return -1;
+        pl.hitOccured = 0;
+        return pl;
     }
 
-    // Otherwise return amount of ray which passes through box (tmax - tmin)
-    return tmax - tmin;
+    // Otherwise return payload for hit
+    pl.hitOccured = 1;
+    pl.tmax = tmax;
+    pl.tmin = tmin;
+    return pl;
 
 }
 
@@ -95,9 +114,11 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float totalIntersectionAmt = 0;
     Ray r = CastRayToPlayer(radiationSources[id.x]);
     for(uint j=0; j < numGeoObjs; j++ ){
-        float thisObjIntersectionAmt = RayBoxIntersect(r, sceneGeometry[j]);
-        if(thisObjIntersectionAmt > -1){
-            totalIntersectionAmt += thisObjIntersectionAmt;
+        AABBIntersectPayload intersection = RayBoxIntersect(r, sceneGeometry[j]);
+        // If the intersection occurs and is between the player and the source
+        float distToPlayer = Dist3D(playerPos, radiationSources[id.x].pos.xyz);
+        if(intersection.hitOccured == 1 && distToPlayer > intersection.tmin){
+            totalIntersectionAmt += intersection.tmax - intersection.tmin;
         }
     }
 
