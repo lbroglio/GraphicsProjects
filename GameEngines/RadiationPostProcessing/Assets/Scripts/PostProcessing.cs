@@ -45,9 +45,11 @@ public class PostProcessing : MonoBehaviour
         // Get struct rep for all sources
         sourcesList = new RadiationSource.PassableRadiationSource[sourceObjects.Length];
         for(int i =0; i < sourceObjects.Length; i++){
-           sourcesList[i] = sourceObjects[i].GetPassableRep();
+            RadiationSource.PassableRadiationSource curr = sourceObjects[i].GetPassableRep();
+            sourcesList[curr.id] = curr;
         }
-        radSourcesBuffer = new ComputeBuffer(sourcesList.Length, sizeof(float) * 5);
+
+        radSourcesBuffer = new ComputeBuffer(sourcesList.Length, (sizeof(float) * 5) + sizeof(uint));
         radSourcesBuffer.SetData(sourcesList);
 
         // Set relevant values in the shader
@@ -70,8 +72,9 @@ public class PostProcessing : MonoBehaviour
     void Start()
     {
         // Add bounding boxes of scene geometry to a ComputeBuffer
-        GameObject[] sceneGeo = GameObject.FindGameObjectsWithTag("WorldGeometry");
+        GameObject[] sceneGeo = GameObject.FindGameObjectsWithTag("SceneGeometry");
         List<BoundingBox>  boundingBoxList = new List<BoundingBox>();
+        numSceneObjs = boundingBoxList.Count;
         foreach(GameObject geoObj in sceneGeo){
             // Create bounding box struct for this 
             BoundingBox bb;
@@ -81,9 +84,9 @@ public class PostProcessing : MonoBehaviour
 
         }
 
-        
+
         // Setup compute buffer to hold scene geometry bounding boxes
-        sceneGeoBuffer = new ComputeBuffer(boundingBoxList.Count, sizeof(float) * 9);
+        sceneGeoBuffer = new ComputeBuffer(boundingBoxList.Count, sizeof(float) * 6);
         sceneGeoBuffer.SetData(boundingBoxList.ToArray());
 
         // Set config values
@@ -110,9 +113,11 @@ public class PostProcessing : MonoBehaviour
         // Update position for all radiation sources
         RadiationSource[] sourceObjects = FindObjectsOfType<RadiationSource>();
         for(int i =0; i < sourceObjects.Length; i++){
-           sourcesList[i].pos = sourceObjects[i].transform.position;
+            RadiationSource curr = sourceObjects[i];
+            sourcesList[curr.id].pos = sourceObjects[i].transform.position;
         }
         radSourcesBuffer.SetData(sourcesList);
+
 
 
         // Update the frame count
@@ -143,6 +148,13 @@ public class PostProcessing : MonoBehaviour
         int workgroupsX = Mathf.CeilToInt(sourcesList.Length / 16.0f);
         BlockAmtCalcShader.Dispatch(kernel, workgroupsX, 1, 1);
 
+        // Print block amount
+        float[] tst = new float[sourcesList.Length];
+        sourcePlayerBlockBuffer.GetData(tst);
+        for(int i = 0; i < sourcesList.Length; i++){
+            Debug.Log("Source " + i + ": " + tst[i]);
+        }
+
 
         // Perform post processing
         Graphics.Blit(source, destination, radiationEffectShader);
@@ -150,5 +162,7 @@ public class PostProcessing : MonoBehaviour
 
     void OnDestroy(){
         radSourcesBuffer.Release();
+        sceneGeoBuffer.Release();
+        sourcePlayerBlockBuffer.Release();
     }
 }

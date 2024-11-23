@@ -30,7 +30,8 @@ Shader "Custom/PostProcessing/RadiationDistortion"
                 float2 uv : TEXCOORD0;
                 float4 vertex : SV_POSITION;
             };
-
+            
+            // Information on an object which produces radiation which can distort the image
             struct RadiationSource {
                 float strength;
                 float4 pos;

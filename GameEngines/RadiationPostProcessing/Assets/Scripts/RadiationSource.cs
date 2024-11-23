@@ -7,7 +7,7 @@ public class RadiationSource : MonoBehaviour
     // The id that will be given to the next source created
     public static uint nextId = 0;
 
-    private uint id;
+    public uint id;
 
     public float strength = 1;
 
@@ -23,7 +23,7 @@ public class RadiationSource : MonoBehaviour
         PassableRadiationSource rep;
         rep.strength = (uint) strength;
         rep.pos = new Vector4(transform.position.x, transform.position.y, transform.position.z, 1);
-        rep.id = nextId;
+        rep.id = id;
 
         return rep;
     }

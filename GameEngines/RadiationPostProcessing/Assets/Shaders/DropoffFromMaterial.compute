@@ -1,16 +1,25 @@
 // Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
 
+// Axis Aligned Bounding Box of an object in the world
 struct BoundingBox {
     float3 minimal;
     float3 maximal;
 };
 
+// Information on an object which produces radiation which can distort the image
 struct RadiationSource {
     float strength;
     float4 pos;
     uint id;
 };
+
+struct Ray{
+    float3 origin;
+    float3 direction;
+}
+
+
 
 // Input buffers
 StructuredBuffer<BoundingBox> sceneGeometry;
@@ -24,18 +33,75 @@ RWStructuredBuffer<float> sourcePlayerBlock;
 
 float3 playerPos;
 
+// Create a ray cast from a radiation source in the direction of the player 
+Ray CastRayToPlayer(RadiationSource castFrom){
+    Ray r;
+    r.origin = float3(castFrom.pos.xyz);
+    r.direction = normalize(playerPos);
+
+    return r;
+}
+
+// Check if a ray intersects a bounding box. 
+// If it does return the difference between the two intersection points (The amount of material this ray passes through)
+// Otherwise return -1.
+int RayBoxIntersect(Ray r, BoundingBox b){
+    float3 dirfrac;
+    // r.dir is unit direction vector of ray
+    dirfrac.x = 1.0f / r.direction.x;
+    dirfrac.y = 1.0f / r.direction.y;
+    dirfrac.z = 1.0f / r.direction.z;
+
+    // Calculate t values
+    float t1 = (b.minimal.x - r.origin.x) * dirfrac.x;
+    float t2 = (b.maximal.x - r.origin.x) * dirfrac.x;
+    float t3 = (b.minimal.y - r.origin.y) * dirfrac.y;
+    float t4 = (b.maximal.y - r.origin.y) * dirfrac.y;
+    float t5 = (b.minimal.z - r.origin.z) * dirfrac.z;
+    float t6 = (b.maximal.z - r.origin.z) * dirfrac.z;
+
+    // Build t min and max
+    float tmin = max(max(min(t1, t2), min(t3, t4)), min(t5, t6));
+    float tmax = min(min(max(t1, t2), max(t3, t4)), max(t5, t6));
+
+    // Return -1 if AABB intersection is behind ray (tmax < 0)
+    if (tmax < 0)
+    {
+        return -1;
+    }
+
+    // Return -1 if no intersection occurs (tmin > tmax)
+    if (tmin > tmax)
+    {
+        return -1;
+    }
+
+    // Otherwise return amount of ray which passes through box (tmax - tmin)
+    return tmax - tmin;
+
+}
+
 
 [numthreads(16,1,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
+
     // If out of range end early 
     if(id.x >= numSources){
         return;
     }
 
+    // Check this source against all AABBs and track amount of intersection
+     float totalIntersectionAmt = 0;
+    Ray r = CastRayToPlayer(radiationSources[id.x]);
+    for(uint j=0; j < numGeoObjs; j++ ){
+        float thisObjIntersectionAmt = RayBoxIntersect(r, sceneGeometry[j]);
+        if(thisObjIntersectionAmt > -1){
+            totalIntersectionAmt += thisObjIntersectionAmt;
+        }
+    }
 
+    // Set this sources material block amount in buffer
+    sourcePlayerBlock[id.x] = totalIntersectionAmt;
 
-    // TODO: insert actual code here!
-
-    Result[id.xy] = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0);
 }
