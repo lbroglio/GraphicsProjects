@@ -349,7 +349,7 @@ GameObject:
   - component: {fileID: 774120534}
   m_Layer: 0
   m_Name: Back Wall
-  m_TagString: Untagged
+  m_TagString: SceneGeometry
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -560,6 +560,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11a812cc30088423f8461a1a8211fd64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  BlockAmtCalcShader: {fileID: 0}
   Intensity: 0.03
   MaximumEffectRadius: 10
 --- !u!1 &1243363021
@@ -576,7 +577,7 @@ GameObject:
   - component: {fileID: 1243363022}
   m_Layer: 0
   m_Name: Ground
-  m_TagString: Untagged
+  m_TagString: SceneGeometry
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -681,7 +682,7 @@ GameObject:
   - component: {fileID: 1769607517}
   m_Layer: 0
   m_Name: Left Wall
-  m_TagString: Untagged
+  m_TagString: SceneGeometry
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -905,7 +906,7 @@ GameObject:
   - component: {fileID: 2135058099}
   m_Layer: 0
   m_Name: Right Wall
-  m_TagString: Untagged
+  m_TagString: SceneGeometry
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
