@@ -9,6 +9,15 @@ public class PostProcessing : MonoBehaviour
     struct BoundingBox {
         public Vector3 minimal;
         public Vector3 maximal;
+        /* The type of material the object for this boundng box is made of 
+
+        TYPES: 
+        0 = WOOD
+        1 = IRON
+        2 = CONCRETE
+        3 = LEAD
+        */
+        public uint matType;
     };
 
     // Compute buffer which stores the sources of radiation
@@ -72,13 +81,15 @@ public class PostProcessing : MonoBehaviour
     void Start()
     {
         // Add bounding boxes of scene geometry to a ComputeBuffer
-        GameObject[] sceneGeo = GameObject.FindGameObjectsWithTag("SceneGeometry");
+        SceneGeoObj[] sceneGeo = FindObjectsOfType<SceneGeoObj>();
         List<BoundingBox> boundingBoxList = new List<BoundingBox>();
-        foreach(GameObject geoObj in sceneGeo){
+        foreach(SceneGeoObj geoObj in sceneGeo){
             // Create bounding box struct for this 
             BoundingBox bb;
-            bb.minimal = geoObj.GetComponent<Collider>().bounds.min;
-            bb.maximal = geoObj.GetComponent<Collider>().bounds.max;
+            bb.minimal = geoObj.gameObject.GetComponent<Collider>().bounds.min;
+            bb.maximal = geoObj.gameObject.GetComponent<Collider>().bounds.max;
+            bb.matType = (uint) geoObj.matType;
+            Debug.Log(bb.matType);
             boundingBoxList.Add(bb);
 
         }
@@ -87,7 +98,7 @@ public class PostProcessing : MonoBehaviour
 
 
         // Setup compute buffer to hold scene geometry bounding boxes
-        sceneGeoBuffer = new ComputeBuffer(boundingBoxList.Count, sizeof(float) * 6);
+        sceneGeoBuffer = new ComputeBuffer(boundingBoxList.Count, sizeof(float) * 6 + sizeof(uint));
         sceneGeoBuffer.SetData(boundingBoxList.ToArray());
 
         // Set config values

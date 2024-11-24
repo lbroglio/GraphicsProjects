@@ -85,9 +85,15 @@ Shader "Custom/PostProcessing/RadiationDistortion"
                         float effectCutoff = intensity * radiationSources[j].strength * distPercent;
                         
                         // If the random value is less than the cutoff increase brightness of this pixel
-                        // by a random amount between 1 - 5
                         if(effectRand < effectCutoff){
-                            totalDistortion += 1 + ceil(radiationSources[j].strength / 10);
+                            float distortionAmt =  1 + ceil(radiationSources[j].strength / 10);
+
+                            // Decrease distortion if material is between the source and the player
+
+                            // Adjust reduction based on source strength 
+                            float reduction = sourcePlayerBlock[radiationSources[j].id];
+
+                            totalDistortion += distortionAmt * (1 - reduction);
                         }
                     }
 

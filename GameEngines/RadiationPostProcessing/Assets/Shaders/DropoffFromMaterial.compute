@@ -1,10 +1,25 @@
 // Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
 
-// Axis Aligned Bounding Box of an object in the world
+// Amount of each material to complete dissipate radiation
+#define WOOD_FULL_AMT 4.7
+#define IRON_FULL_AMT 1
+#define CONCRETE_FULL_AMT 2
+#define LEAD_FULL_AMT 0.45
+
+// Axis Aligned Bounding Box of an object in the world. 
 struct BoundingBox {
     float3 minimal;
     float3 maximal;
+    /* The type of material the object for this boundng box is made of 
+
+    TYPES: 
+    0 = WOOD
+    1 = IRON
+    2 = CONCRETE
+    3 = LEAD
+    */
+    uint matType;
 };
 
 // Information on an object which produces radiation which can distort the image
@@ -25,6 +40,7 @@ struct AABBIntersectPayload{
     uint hitOccured;
     float tmin;
     float tmax;
+    uint intersectedType;
 };
 
 
@@ -96,8 +112,29 @@ AABBIntersectPayload RayBoxIntersect(Ray r, BoundingBox b){
     pl.hitOccured = 1;
     pl.tmax = tmax;
     pl.tmin = tmin;
+    pl.intersectedType = b.matType;
     return pl;
 
+}
+
+// Scale the amount of distortion based on the material type
+// Scaled value will be between 0 -  1
+float MaterialScale(float distortAmt, uint matType){
+    if(matType == 0){
+        distortAmt /= WOOD_FULL_AMT;
+    }
+    else if(matType == 1){
+        return distortAmt;
+    }
+    else if(matType == 2){
+        distortAmt /= CONCRETE_FULL_AMT;
+    }
+    else if(matType == 3){
+        distortAmt /= LEAD_FULL_AMT;
+    }
+
+
+    return distortAmt;
 }
 
 
@@ -118,7 +155,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         // If the intersection occurs and is between the player and the source
         float distToPlayer = Dist3D(playerPos, radiationSources[id.x].pos.xyz);
         if(intersection.hitOccured == 1 && distToPlayer > intersection.tmin){
-            totalIntersectionAmt += intersection.tmax - intersection.tmin;
+            totalIntersectionAmt += MaterialScale(intersection.tmax - intersection.tmin, 
+                intersection.intersectedType);
         }
     }
 
