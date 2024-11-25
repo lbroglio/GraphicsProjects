@@ -89,7 +89,6 @@ public class PostProcessing : MonoBehaviour
             bb.minimal = geoObj.gameObject.GetComponent<Collider>().bounds.min;
             bb.maximal = geoObj.gameObject.GetComponent<Collider>().bounds.max;
             bb.matType = (uint) geoObj.matType;
-            Debug.Log(bb.matType);
             boundingBoxList.Add(bb);
 
         }
