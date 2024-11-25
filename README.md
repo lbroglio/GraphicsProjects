@@ -38,7 +38,7 @@ The second shader is a compute shader which is dispatched before the first shade
 *An actual image affected by radiation for reference. Credit to BeneficialBad9166 on Reddit* 
 
 | An actual image affected by radiation for reference. | The effect in Unity |
-| ------------------------ | ----------------------------------------------------------------------------------------- |
+| :------------------------: | :-----------------------------------------------------------------------------------------: |
 | <image src="https://preview.redd.it/radiation-damaged-photos-v0-t1zaf22i803c1.jpeg?width=562&format=pjpg&auto=webp&s=3fc68aebb717640e2026dbc4d783f24d901fe781" alt="An actual image affected by radiation for reference" height="500px"/> | <image src="docs/images//RadiationEffectDemo.png" alt="A unity scene with a random set of pixel brightened" width=600px/>  |
 | *Credit to BeneficialBad9166 on Reddit* | | 
 
