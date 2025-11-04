@@ -7,12 +7,12 @@ from pathlib import Path
 # Returns a string containing the header for a shader made from the template
 def make_header_from_template(shaderName : str, shaderContents : str):
     return f"""
-    #ifndef SHADER_{shaderName.upper()}
-    #define SHADER_{shaderName.upper()}
+#ifndef SHADER_{shaderName.upper()}
+#define SHADER_{shaderName.upper()}
 
-    const char* {shaderName.upper()}_SHADER_SRC = R"V0G0N({shaderContents})V0G0N"
+const char* {shaderName.upper()}_SHADER_SRC = R"V0G0N({shaderContents})V0G0N";
 
-    #endif
+#endif
     """
 
 
@@ -23,7 +23,8 @@ def generate_shader_header(shaderFilePath : str, buildRoot = "."):
     shaderContents = shaderFile.read()
     shaderFile.close()
 
-    shaderName = Path.stem(shaderFilePath)
+    shaderPathObj = Path(shaderFilePath)
+    shaderName = shaderPathObj.stem
     shaderHeader = make_header_from_template(shaderName, shaderContents)
 
     # Ensure that the shader header directory exists

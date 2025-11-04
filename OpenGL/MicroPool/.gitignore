@@ -1,0 +1,9 @@
+# MacOS Files
+.DS_STORE
+
+# IDE Files
+.vscode
+
+# Build Artifacts
+bin
+micropool
