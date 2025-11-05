@@ -2,7 +2,7 @@ CC= g++
 APPNAME= micropool
 OBJECTS= micropool.o
 SHADERS= vertex.hpp
-FLAGS= -Wall -Werror -std=c++17
+FLAGS= -Wall -Werror -std=c++23
 
 .phony: clean
 

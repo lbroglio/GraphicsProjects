@@ -6,8 +6,7 @@ from pathlib import Path
 
 # Returns a string containing the header for a shader made from the template
 def make_header_from_template(shaderName : str, shaderContents : str):
-    return f"""
-#ifndef SHADER_{shaderName.upper()}
+    return f"""#ifndef SHADER_{shaderName.upper()}
 #define SHADER_{shaderName.upper()}
 
 const char* {shaderName.upper()}_SHADER_SRC = R"V0G0N({shaderContents})V0G0N";
