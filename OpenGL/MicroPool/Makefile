@@ -5,11 +5,12 @@ OBJECTS := $(patsubst src/%.cpp,bin/%.o,$(SOURCES))
 SHADER_SOURCES := $(wildcard src/shaders/*.glsl)
 SHADERS := $(patsubst src/shaders/%.glsl,bin/shaderHeaders/%.hpp,$(SHADER_SOURCES))
 FLAGS := -Wall -Werror -std=c++23
+LDFLAGS := -L/opt/homebrew/lib -lglfw -framework OpenGL
 
 .phony: clean
 
 $(APPNAME): $(OBJECTS)
-	$(CXX) $(FLAGS) $< -o $@
+	$(CXX) $(FLAGS) $< -o $@ $(LDFLAGS)
 
 $(OBJECTS): bin/%.o : src/%.cpp bin $(SHADERS)
 	$(CXX) $(FLAGS) -c $< -o $@
