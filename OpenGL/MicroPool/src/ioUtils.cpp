@@ -13,14 +13,22 @@ void writeBufferToPly(std::vector<float> buffer, std::string filePath){
 
     // Write the header
     outFile << "ply\n";
-    outFile << "ascii 1.0\n";
-    outFile << "element vertex " << buffer.size() / 3 << '\n';
+    outFile << "format ascii 1.0\n";
+    outFile << "element vertex " << (buffer.size() / 3) << '\n';
     outFile << "property float x\n";
     outFile << "property float y\n";
     outFile << "property float z\n";
+    outFile << "element face " << (buffer.size() / 9) << '\n';
+    outFile << "property list uchar uint vertex_indices" << '\n';
+    outFile << "end_header\n";
 
-    // Write the elements 
+    // Write the vertex elements 
     for(int i = 0; i < buffer.size(); i+=3){
         outFile << buffer[i] << " " << buffer[i+1] << " " << buffer[i+2] << '\n';
+    }
+
+    // Write the faces
+    for(int i = 0; i < buffer.size(); i+=3){
+        outFile << i << ' ' << i + 1 << ' ' << i + 2 << '\n';
     }
 }

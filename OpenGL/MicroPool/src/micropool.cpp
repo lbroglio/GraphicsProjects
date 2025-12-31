@@ -6,7 +6,7 @@
 #include"ioUtils.hpp"
 
 int main(int argc, char* argv[]){
-    std::vector<float> testBuffer = buildUVSphereMesh(16, 16);
+    std::vector<float> testBuffer = buildUVSphereMesh(64, 64);
     writeBufferToPly(testBuffer, "test.ply");
 
     return 0;

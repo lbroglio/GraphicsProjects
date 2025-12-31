@@ -30,6 +30,15 @@ struct Vertex{
      * @param z 
      */
     Vertex(float x, float y, float z);
+
+    /**
+     * @brief Overload the << operator to print the Vertex coordinates.
+     * 
+     * @param os The output stream to write to.
+     * @param v The Vertex to print.
+     * @return std::ostream& The output stream after writing.
+     */
+    friend std::ostream& operator<<(std::ostream& os, const Vertex& v);
 };
 
 
@@ -37,7 +46,7 @@ struct Vertex{
  * @brief Get the Cartesian coordinates of a point specified in polar coordinates.
  * 
  * @param r 
- * @param theta 
+ * @param theta The angle theta in degrees.
  * @return Vertex The cartesian coordiantes of the point specified by r and theta.
  * Stored in the x and y values of the Vertex Object. z will be zero.
  */
